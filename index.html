@@ -6,7 +6,6 @@
     <title>Stylish Music Player</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Previous CSS styles remain the same */
         :root {
             --primary: #6c5ce7;
             --secondary: #a29bfe;
@@ -14,9 +13,15 @@
             --light: #dfe6e9;
         }
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,31 +32,192 @@
 
         .player {
             background: rgba(255, 255, 255, 0.95);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 1rem;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: min(90vw, 350px);
             backdrop-filter: blur(10px);
         }
 
-        /* Previous CSS styles remain the same until playlist styles */
+        .album-art {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .track-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--dark);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0.25rem 0 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--light);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            margin: 1rem 0;
+        }
+
+        .progress {
+            width: 0;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--dark);
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            color: var(--primary);
+        }
+
+        .play-btn {
+            width: 3rem;
+            height: 3rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .volume-icon {
+            color: var(--dark);
+            font-size: 1rem;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--light);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
 
         .playlist {
             margin-top: 1rem;
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
             background: rgba(223, 230, 233, 0.3);
             border-radius: 0.5rem;
             padding: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .playlist::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .playlist::-webkit-scrollbar-track {
+            background: rgba(223, 230, 233, 0.3);
+        }
+
+        .playlist::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 3px;
         }
 
         .playlist-item {
             display: flex;
             align-items: center;
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .playlist-item:last-child {
+            margin-bottom: 0;
         }
 
         .playlist-item:hover {
@@ -64,27 +230,82 @@
         }
 
         .playlist-item-info {
-            margin-left: 0.5rem;
+            width: 100%;
         }
 
         .playlist-item-title {
             font-size: 0.9rem;
             font-weight: 500;
             margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .playlist-item-artist {
             font-size: 0.8rem;
             color: #666;
-            margin: 0;
+            margin: 0.25rem 0 0;
         }
 
         .active .playlist-item-artist {
             color: rgba(255, 255, 255, 0.8);
         }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            .player {
+                padding: 1rem;
+                width: 100%;
+            }
+
+            .controls {
+                gap: 1rem;
+            }
+
+            .play-btn {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+
+            .control-btn {
+                font-size: 1rem;
+            }
+
+            .playlist {
+                max-height: 150px;
+            }
+        }
+
+        @media (hover: none) {
+            .control-btn:hover,
+            .play-btn:hover,
+            .playlist-item:hover {
+                transform: none;
+                background: inherit;
+            }
+        }
+
+        @supports not (aspect-ratio: 1) {
+            .album-art {
+                height: 0;
+                padding-bottom: 100%;
+                position: relative;
+            }
+
+            .album-art img {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- The rest of the HTML and JavaScript remains the same -->
     <div class="player">
         <audio id="audio-player"></audio>
         
@@ -129,37 +350,37 @@
     </div>
 
     <script>
-        // Playlist data
+        // JavaScript code remains the same as in your original version
         const playlist = [
             {
                 title: "Kaanamullal",
                 artist: "Jayasree",
-                audio: "abc.mp3",
-                artwork: "image.jpeg"
+                audio: "https://files.catbox.moe/evwlar.mp3",
+                artwork: "https://files.catbox.moe/88obwx.jpeg"
             },
             {
                 title: "Kaanamullal",
                 artist: "Jayasree",
-                audio: "abc.mp3",
-                artwork: "image.jpeg"
+                audio: "https://files.catbox.moe/evwlar.mp3",
+                artwork: "https://files.catbox.moe/88obwx.jpeg"
             },
             {
                 title: "Kaanamullal",
                 artist: "Jayasree",
-                audio: "abc.mp3",
-                artwork: "image.jpeg"
+                audio: "https://files.catbox.moe/evwlar.mp3",
+                artwork: "https://files.catbox.moe/88obwx.jpeg"
             },
             {
                 title: "Kaanamullal",
                 artist: "Jayasree",
-                audio: "abc.mp3",
-                artwork: "image.jpeg"
+                audio: "https://files.catbox.moe/evwlar.mp3",
+                artwork: "https://files.catbox.moe/88obwx.jpeg"
             },
             {
                 title: "Kaanamullal",
                 artist: "Jayasree",
-                audio: "abc.mp3",
-                artwork: "image.jpeg"
+                audio: "https://files.catbox.moe/evwlar.mp3",
+                artwork: "https://files.catbox.moe/88obwx.jpeg"
             }
         ];
 
