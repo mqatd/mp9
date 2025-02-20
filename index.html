@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stylish Music Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Previous CSS styles remain the same */
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #dfe6e9;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .player {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Previous CSS styles remain the same until playlist styles */
+
+        .playlist {
+            margin-top: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(223, 230, 233, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .playlist-item.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .playlist-item-info {
+            margin-left: 0.5rem;
+        }
+
+        .playlist-item-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .playlist-item-artist {
+            font-size: 0.8rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .active .playlist-item-artist {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <audio id="audio-player"></audio>
+        
+        <div class="album-art">
+            <img id="current-artwork" src="image.jpeg" alt="Album Art">
+        </div>
+        
+        <div class="track-info">
+            <h2 class="track-title">Kaanamullal</h2>
+            <p class="track-artist">Jayasree</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        
+        <div class="time">
+            <span class="current-time">0:00</span>
+            <span class="total-time">0:00</span>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="prev-btn">
+                <i class="fas fa-backward-step"></i>
+            </button>
+            <button class="control-btn play-btn" id="play-btn">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="control-btn" id="next-btn">
+                <i class="fas fa-forward-step"></i>
+            </button>
+        </div>
+        
+        <div class="volume-control">
+            <i class="fas fa-volume-high volume-icon"></i>
+            <input type="range" class="volume-slider" min="0" max="100" value="80">
+        </div>
+
+        <div class="playlist">
+            <!-- Playlist items will be added here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // Playlist data
+        const playlist = [
+            {
+                title: "Kaanamullal",
+                artist: "Jayasree",
+                audio: "abc.mp3",
+                artwork: "image.jpeg"
+            },
+            {
+                title: "Song 2",
+                artist: "Artist 2",
+                audio: "song2.mp3",
+                artwork: "image2.jpeg"
+            },
+            {
+                title: "Song 3",
+                artist: "Artist 3",
+                audio: "song3.mp3",
+                artwork: "image3.jpeg"
+            },
+            {
+                title: "Song 4",
+                artist: "Artist 4",
+                audio: "song4.mp3",
+                artwork: "image4.jpeg"
+            },
+            {
+                title: "Song 5",
+                artist: "Artist 5",
+                audio: "song5.mp3",
+                artwork: "image5.jpeg"
+            }
+        ];
+
+        let currentTrackIndex = 0;
+
+        const audioPlayer = document.getElementById('audio-player');
+        const player = document.querySelector('.player');
+        const playBtn = document.querySelector('.play-btn');
+        const playIcon = playBtn.querySelector('i');
+        const progress = document.querySelector('.progress');
+        const progressBar = document.querySelector('.progress-bar');
+        const currentTimeEl = document.querySelector('.current-time');
+        const totalTimeEl = document.querySelector('.total-time');
+        const volumeIcon = document.querySelector('.volume-icon');
+        const volumeSlider = document.querySelector('.volume-slider');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentArtwork = document.getElementById('current-artwork');
+        const trackTitle = document.querySelector('.track-title');
+        const trackArtist = document.querySelector('.track-artist');
+        const playlistContainer = document.querySelector('.playlist');
+
+        // Initialize playlist UI
+        function initializePlaylist() {
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = `playlist-item ${index === 0 ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="playlist-item-info">
+                        <p class="playlist-item-title">${track.title}</p>
+                        <p class="playlist-item-artist">${track.artist}</p>
+                    </div>
+                `;
+                item.addEventListener('click', () => loadTrack(index));
+                playlistContainer.appendChild(item);
+            });
+        }
+
+        // Load and play a track
+        function loadTrack(index) {
+            currentTrackIndex = index;
+            const track = playlist[index];
+            
+            audioPlayer.src = track.audio;
+            currentArtwork.src = track.artwork;
+            trackTitle.textContent = track.title;
+            trackArtist.textContent = track.artist;
+            
+            // Update playlist UI
+            document.querySelectorAll('.playlist-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            audioPlayer.play();
+        }
+
+        // Previous track
+        prevBtn.addEventListener('click', () => {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+        });
+
+        // Next track
+        nextBtn.addEventListener('click', () => {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+        });
+
+        // Auto-play next track when current track ends
+        audioPlayer.addEventListener('ended', () => {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+        });
+
+        // Initialize the first track
+        audioPlayer.src = playlist[0].audio;
+
+        // Previous event listeners and functions remain the same
+        playBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            playIcon.className = 'fas fa-pause';
+            player.classList.add('playing');
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            playIcon.className = 'fas fa-play';
+            player.classList.remove('playing');
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progress.style.width = `${percent}%`;
+            currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        });
+
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            totalTimeEl.textContent = formatTime(audioPlayer.duration);
+        });
+
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            audioPlayer.volume = value / 100;
+            
+            if (value == 0) {
+                volumeIcon.className = 'fas fa-volume-mute';
+            } else if (value < 50) {
+                volumeIcon.className = 'fas fa-volume-low';
+            } else {
+                volumeIcon.className = 'fas fa-volume-high';
+            }
+        });
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Set initial volume
+        audioPlayer.volume = volumeSlider.value / 100;
+
+        // Initialize playlist
+        initializePlaylist();
+    </script>
+</body>
+</html>
